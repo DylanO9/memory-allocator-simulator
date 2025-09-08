@@ -10,5 +10,7 @@ typedef struct block_header {
 } block_header;
 
 void init_heap(size_t size);
-
+void destroy_heap();
+void my_malloc(size_t size);
+void my_free(void* ptr);
 #endif // ALLOCATOR_H
