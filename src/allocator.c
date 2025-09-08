@@ -29,3 +29,37 @@ void destroy_heap() {
     free_list = NULL;
     printf("Heap was destroyed successfully!\n");
 }
+
+void *my_malloc(size_t size) {
+    size = ALIGN4(size); // Align to 4 bytes
+    
+    block_header* curr = free_list;
+
+    while (curr) {
+        if (curr->free &&  size <= curr->size) {
+            if (curr->size >= size + sizeof(block_header) + 4) {
+                block_header* new_block = (block_header *)((char *)curr + sizeof(block_header) + size);
+                new_block->size = curr->size - size - sizeof(block_header);
+                new_block->free = 1;
+                new_block->next = curr->next;
+                curr->next = new_block; 
+                curr->size = size;
+            }
+            curr->free = 0;
+            return (char *) curr + sizeof(block_header);
+        } 
+        curr = curr->next;
+    }    
+    return NULL;
+}
+
+void my_free(void* ptr) {
+    if (!ptr) return;
+    block_header* block = (block_header*)((char *)ptr - sizeof(block_header));
+    block->free = 1;
+    
+    if (block->next && block->next->free) {
+        block->size += sizeof(block_header) + block->next->size;
+        block->next = block->next->next; 
+    }
+}
